@@ -6,7 +6,7 @@ fn main() -> io::Result<()> {
     const TCP: u8 = 0x02;
     const IN_PORT: [u8; 2] = 8080u16.to_be_bytes();
     const OUT_PORT: [u8; 2] = IN_PORT;
-    const TIMEOUT: [u8; 4] = 300u32.to_be_bytes(); //in secs
+    const TIMEOUT: [u8; 4] = 300u32.to_be_bytes(); //in secs, 0 to destroy mapping
 
     let mut request = vec![0x00, TCP, 0x00, 0x00];
     request.append(&mut IN_PORT.to_vec());
@@ -22,7 +22,7 @@ fn main() -> io::Result<()> {
     let sock_fd = types::Fd(sock.as_raw_fd());
 
     let write_entry =
-        opcode::Write::new(sock_fd, request.to_vec().as_mut_ptr(), request.len() as _).build();
+        opcode::Write::new(sock_fd, request.as_mut_ptr(), request.len() as _).build();
     let read_entry =
         opcode::Read::new(sock_fd, result_buf.as_mut_ptr(), result_buf.len() as _).build();
 
