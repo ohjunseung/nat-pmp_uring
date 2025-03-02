@@ -12,6 +12,7 @@ fn main() -> io::Result<()> {
     request.append(&mut IN_PORT.to_vec());
     request.append(&mut OUT_PORT.to_vec());
     request.append(&mut TIMEOUT.to_vec());
+    assert!(request.len() == 12);
 
     let sock = std::net::UdpSocket::bind("0.0.0.0:5350")?;
     sock.connect("192.168.1.1:5351")?;
