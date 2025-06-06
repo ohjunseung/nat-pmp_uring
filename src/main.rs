@@ -1,17 +1,40 @@
+use clap::{Parser, ValueEnum, arg};
 use io_uring::{IoUring, opcode, types};
 use std::{io, os::fd::AsRawFd};
 
-fn main() -> io::Result<()> {
-    //const UDP: u8 = 0x01;
-    const TCP: u8 = 0x02;
-    const IN_PORT: [u8; 2] = 8080u16.to_be_bytes();
-    const EX_PORT: [u8; 2] = IN_PORT;
-    const TIMEOUT: [u8; 4] = 300u32.to_be_bytes(); //in secs, 0 to destroy mapping
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+#[repr(u8)]
+enum Protocol {
+    TCP = 0x01,
+    UDP = 0x02,
+}
 
-    let mut request = vec![0x00, TCP, 0x00, 0x00];
-    request.append(&mut IN_PORT.to_vec());
-    request.append(&mut EX_PORT.to_vec());
-    request.append(&mut TIMEOUT.to_vec());
+#[derive(Parser, Debug)]
+struct Args {
+    #[arg(short, value_enum, default_value_t = Protocol::TCP)]
+    protocol: Protocol,
+    internal_port: u16,
+    external_port: Option<u16>,
+
+    #[arg(short, default_value_t = 0)]
+    timeout: u32,
+}
+
+fn main() -> io::Result<()> {
+    let args = Args::parse();
+
+    let protocol: u8 = args.protocol as u8;
+    let in_port: [u8; 2] = args.internal_port.to_be_bytes();
+    let ex_port: [u8; 2] = match args.external_port {
+        Some(port) => port.to_be_bytes(),
+        None => in_port,
+    };
+    let timeout: [u8; 4] = args.timeout.to_be_bytes(); //in secs, 0 to destroy mapping
+
+    let mut request = vec![0x00, protocol, 0x00, 0x00];
+    request.append(&mut in_port.to_vec());
+    request.append(&mut ex_port.to_vec());
+    request.append(&mut timeout.to_vec());
     assert!(request.len() == 12);
 
     let sock = std::net::UdpSocket::bind("0.0.0.0:5350")?;
@@ -21,8 +44,7 @@ fn main() -> io::Result<()> {
     let mut result_buf = vec![0u8; 16];
     let sock_fd = types::Fd(sock.as_raw_fd());
 
-    let write_entry =
-        opcode::Write::new(sock_fd, request.as_mut_ptr(), request.len() as _).build();
+    let write_entry = opcode::Write::new(sock_fd, request.as_mut_ptr(), request.len() as _).build();
     let read_entry =
         opcode::Read::new(sock_fd, result_buf.as_mut_ptr(), result_buf.len() as _).build();
 
