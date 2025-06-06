@@ -24,12 +24,16 @@ fn main() -> io::Result<()> {
     let args = Args::parse();
 
     let protocol: u8 = args.protocol as u8;
-    let in_port: [u8; 2] = args.internal_port.to_be_bytes();
-    let ex_port: [u8; 2] = match args.external_port {
-        Some(port) => port.to_be_bytes(),
-        None => in_port,
-    };
     let timeout: [u8; 4] = args.timeout.to_be_bytes(); //in secs, 0 to destroy mapping
+    let in_port: [u8; 2] = args.internal_port.to_be_bytes();
+    let ex_port: [u8; 2] = if args.timeout == 0 { // 0 for removal & dynamic high-numbered port
+        0u16.to_be_bytes()
+    } else {
+        match args.external_port {
+            Some(port) => port.to_be_bytes(),
+            None => in_port,
+        }
+    };
 
     let mut request = vec![0x00, protocol, 0x00, 0x00];
     request.append(&mut in_port.to_vec());
