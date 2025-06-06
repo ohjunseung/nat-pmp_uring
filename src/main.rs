@@ -14,8 +14,10 @@ struct Args {
     #[arg(short, value_enum, default_value_t = Protocol::TCP)]
     protocol: Protocol,
     internal_port: u16,
+    /// Put 0 for dynamic high-numbered port.
     external_port: Option<u16>,
 
+    /// Recommended value is 7200 (2hrs) or put 0 to unmap.
     #[arg(short, default_value_t = 0)]
     timeout: u32,
 }
