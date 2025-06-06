@@ -5,12 +5,12 @@ fn main() -> io::Result<()> {
     //const UDP: u8 = 0x01;
     const TCP: u8 = 0x02;
     const IN_PORT: [u8; 2] = 8080u16.to_be_bytes();
-    const OUT_PORT: [u8; 2] = IN_PORT;
+    const EX_PORT: [u8; 2] = IN_PORT;
     const TIMEOUT: [u8; 4] = 300u32.to_be_bytes(); //in secs, 0 to destroy mapping
 
     let mut request = vec![0x00, TCP, 0x00, 0x00];
     request.append(&mut IN_PORT.to_vec());
-    request.append(&mut OUT_PORT.to_vec());
+    request.append(&mut EX_PORT.to_vec());
     request.append(&mut TIMEOUT.to_vec());
     assert!(request.len() == 12);
 
