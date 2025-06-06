@@ -2,7 +2,7 @@ use clap::{Parser, ValueEnum, arg};
 use io_uring::{IoUring, opcode, types};
 use std::{io, os::fd::AsRawFd};
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+#[derive(Copy, Clone, Debug, ValueEnum)]
 #[repr(u8)]
 enum Protocol {
     TCP = 0x01,
