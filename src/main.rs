@@ -1,4 +1,4 @@
-use clap::{Parser, ValueEnum, arg};
+use clap::{Parser, ValueEnum};
 use io_uring::{IoUring, opcode, types};
 use std::{io, os::fd::AsRawFd};
 
@@ -28,7 +28,8 @@ fn main() -> io::Result<()> {
     let protocol: u8 = args.protocol as u8;
     let timeout: [u8; 4] = args.timeout.to_be_bytes(); //in secs, 0 to destroy mapping
     let in_port: [u8; 2] = args.internal_port.to_be_bytes();
-    let ex_port: [u8; 2] = if args.timeout == 0 { // 0 for removal & dynamic high-numbered port
+    let ex_port: [u8; 2] = if args.timeout == 0 {
+        // 0 for removal & dynamic high-numbered port
         0u16.to_be_bytes()
     } else {
         match args.external_port {
